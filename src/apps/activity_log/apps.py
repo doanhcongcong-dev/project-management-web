@@ -1,5 +1,6 @@
 from django.apps import AppConfig
 
-
 class ActivityLogConfig(AppConfig):
-    name = 'activity_log'
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'apps.activity_log'
+    verbose_name = 'Nhật ký hoạt động'

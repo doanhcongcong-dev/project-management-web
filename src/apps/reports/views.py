@@ -6,7 +6,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from apps.projects.models import Project
 from apps.tasks.models import Task
 from apps.risks.models import Risk
-from apps.employees.models import Employee
+from apps.employees.models import EmployeeProfile
 from apps.test_products.models import TestProduct
 from apps.users.models import UserProfile
 from datetime import datetime, timedelta
@@ -30,7 +30,7 @@ def dashboard(request):
     open_risks = Risk.objects.filter(status__in=['open', 'monitoring']).count()
     high_risks = Risk.objects.filter(probability__gte=4, impact__gte=4).count()
 
-    total_employees = Employee.objects.count() or UserProfile.objects.count()
+    total_employees = EmployeeProfile.objects.count() or UserProfile.objects.count()
     total_test_products = TestProduct.objects.count()
     pass_tests = TestProduct.objects.filter(result='pass').count()
     fail_tests = TestProduct.objects.filter(result='fail').count()

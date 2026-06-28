@@ -56,6 +56,6 @@ def notify_risk_created(sender, instance, created, **kwargs):
             recipient=instance.assigned_to,
             sender=instance.created_by,
             title=f'Rủi ro mới: {instance.title}',
-            message=f'Rủi ro "{instance.title}" được tạo trong dự án "{instance.project.name}". Mức độ: {instance.get_risk_level.0}',
+            message=f'Rủi ro "{instance.title}" được tạo trong dự án "{instance.project.name}". Mức độ: {instance.get_risk_level()[0]}',
             link=f'/risks/{instance.pk}/'
         )

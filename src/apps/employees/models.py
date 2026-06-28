@@ -47,8 +47,16 @@ def create_employee_profile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_employee_profile(sender, instance, **kwargs):
-    try:
+    if not hasattr(instance, 'employee_profile'):
+        # Nếu chưa có, tạo mới
+        import random
+        employee_id = f"EMP{str(random.randint(1000, 9999))}"
+        EmployeeProfile.objects.create(
+            user=instance,
+            employee_id=employee_id,
+            department='Chưa phân công',
+            position='Nhân viên',
+            hire_date=instance.date_joined.date()
+        )
+    else:
         instance.employee_profile.save()
-    except EmployeeProfile.DoesNotExist:
-        # Nếu chưa có profile, tạo mới
-        EmployeeProfile.objects.create(user=instance)

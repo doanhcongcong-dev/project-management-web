@@ -65,7 +65,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
-    # 'apps.activity_log.middleware.ActivityLogMiddleware',  # tùy chọn
+     'apps.activity_log.middleware.ActivityLogMiddleware',  # tùy chọn
 ]
 
 ROOT_URLCONF = 'config.urls'
