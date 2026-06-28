@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Danh sách cột mốc{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+        <h2><i class="fas fa-flag"></i> Cột mốc</h2>
+        <a href="{% url 'milestones:create' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Thêm cột mốc
+        </a>
+    </div>
+
+    <!-- Bộ lọc -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Dự án</label>
+                    <select name="project" class="form-select">
+                        <option value="">Tất cả</option>
+                        {% for project in projects %}
+                            <option value="{{ project.id }}" {% if selected_project == project.id|stringformat:"s" %}selected{% endif %}>
+                                {{ project.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="status" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>Chưa hoàn thành</option>
+                        <option value="in_progress" {% if selected_status == 'in_progress' %}selected{% endif %}>Đang thực hiện</option>
+                        <option value="completed" {% if selected_status == 'completed' %}selected{% endif %}>Hoàn thành</option>
+                        <option value="delayed" {% if selected_status == 'delayed' %}selected{% endif %}>Trì hoãn</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Tìm kiếm</label>
+                    <input type="text" name="search" class="form-control" placeholder="Tên, mô tả..." value="{{ search_query }}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter"></i> Lọc</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bảng -->
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Tên</th>
+                            <th>Dự án</th>
+                            <th>Hạn</th>
+                            <th>Trạng thái</th>
+                            <th>Tiến độ</th>
+                            <th>Người tạo</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for milestone in page_obj %}
+                            <tr>
+                                <td><a href="{% url 'milestones:detail' milestone.id %}">{{ milestone.name }}</a></td>
+                                <td>{{ milestone.project.name }}</td>
+                                <td>
+                                    {{ milestone.due_date|date:"d/m/Y" }}
+                                    {% if milestone.is_overdue %}
+                                        <span class="badge bg-danger">Quá hạn</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if milestone.status == 'completed' %}success{% elif milestone.status == 'in_progress' %}primary{% elif milestone.status == 'delayed' %}danger{% else %}secondary{% endif %}">
+                                        {{ milestone.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-info" style="width: {{ milestone.get_progress }}%;">{{ milestone.get_progress }}%</div>
+                                    </div>
+                                </td>
+                                <td>{{ milestone.created_by.username|default:"-" }}</td>
+                                <td>
+                                    <a href="{% url 'milestones:detail' milestone.id %}" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a>
+                                    <a href="{% url 'milestones:edit' milestone.id %}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
+                                    <a href="{% url 'milestones:delete' milestone.id %}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="7" class="text-center">Không có cột mốc nào.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if page_obj.has_other_pages %}
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page=1{% for param in request.GET.items %}{% if param.0 != 'page' %}&{{ param.0 }}={{ param.1 }}{% endif %}{% endfor %}">&laquo;</a></li>
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for param in request.GET.items %}{% if param.0 != 'page' %}&{{ param.0 }}={{ param.1 }}{% endif %}{% endfor %}">Trước</a></li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span></li>
+                        {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% for param in request.GET.items %}{% if param.0 != 'page' %}&{{ param.0 }}={{ param.1 }}{% endif %}{% endfor %}">Sau</a></li>
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for param in request.GET.items %}{% if param.0 != 'page' %}&{{ param.0 }}={{ param.1 }}{% endif %}{% endfor %}">&raquo;</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

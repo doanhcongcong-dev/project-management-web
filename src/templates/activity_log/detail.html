@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Chi tiết log{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4>Chi tiết nhật ký</h4>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <tr><th>ID</th><td>{{ log.id }}</td></tr>
+                <tr><th>Người dùng</th><td>{{ log.user.username|default:"Hệ thống" }}</td></tr>
+                <tr><th>Hành động</th><td><span class="badge bg-secondary">{{ log.get_action_display }}</span></td></tr>
+                <tr><th>Mô tả</th><td>{{ log.description|linebreaks }}</td></tr>
+                <tr><th>Địa chỉ IP</th><td>{{ log.ip_address|default:"-" }}</td></tr>
+                <tr><th>User Agent</th><td><code>{{ log.user_agent|default:"-" }}</code></td></tr>
+                <tr><th>URL</th><td><a href="{{ log.url }}" target="_blank">{{ log.url|default:"-" }}</a></td></tr>
+                <tr><th>Phương thức</th><td>{{ log.method|default:"-" }}</td></tr>
+                <tr><th>Loại đối tượng</th><td>{{ log.content_type|default:"-" }}</td></tr>
+                <tr><th>ID đối tượng</th><td>{{ log.object_id|default:"-" }}</td></tr>
+                <tr><th>Thời gian</th><td>{{ log.timestamp|date:"d/m/Y H:i:s" }}</td></tr>
+            </table>
+            <a href="{% url 'activity_log:list' %}" class="btn btn-secondary">Quay lại</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

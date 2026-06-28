@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Chi tiết tài liệu{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between">
+            <h4><i class="fas {{ document.get_file_icon }}"></i> {{ document.name }}</h4>
+            <div>
+                <a href="{% url 'documents:download' document.id %}" class="btn btn-success btn-sm">
+                    <i class="fas fa-download"></i> Tải xuống
+                </a>
+                <a href="{% url 'documents:edit' document.id %}" class="btn btn-warning btn-sm">
+                    <i class="fas fa-edit"></i> Sửa
+                </a>
+                <a href="{% url 'documents:delete' document.id %}" class="btn btn-danger btn-sm">
+                    <i class="fas fa-trash"></i> Xóa
+                </a>
+                <a href="{% url 'documents:list' %}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-arrow-left"></i> Quay lại
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5>Mô tả</h5>
+                    <p>{{ document.description|linebreaks|default:"Không có mô tả" }}</p>
+                </div>
+                <div class="col-md-4">
+                    <table class="table table-bordered">
+                        <tr><th>Dự án</th><td>{{ document.project.name }}</td></tr>
+                        <tr><th>Loại tài liệu</th><td>{{ document.get_document_type_display }}</td></tr>
+                        <tr><th>Phiên bản</th><td>v{{ document.version }}</td></tr>
+                        <tr><th>Kích thước</th><td>{{ document.get_file_size }}</td></tr>
+                        <tr><th>Người tải</th><td>{{ document.uploaded_by.username|default:"-" }}</td></tr>
+                        <tr><th>Ngày tải</th><td>{{ document.uploaded_at|date:"d/m/Y H:i" }}</td></tr>
+                        <tr><th>Cập nhật</th><td>{{ document.updated_at|date:"d/m/Y H:i" }}</td></tr>
+                        <tr><th>Định dạng</th><td>{{ document.get_file_extension|upper }}</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

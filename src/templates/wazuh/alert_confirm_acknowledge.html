@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4><i class="fas fa-check-circle"></i> Xác nhận cảnh báo</h4>
+                </div>
+                <div class="card-body">
+                    <p>Bạn có chắc muốn xác nhận cảnh báo "<strong>{{ alert.rule_description }}</strong>" không?</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Xác nhận</button>
+                        <a href="{% url 'wazuh_integration:alert_detail' alert.id %}" class="btn btn-secondary">Hủy</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

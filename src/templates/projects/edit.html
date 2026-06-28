@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}{% if form.instance.pk %}Sửa dự án{% else %}Tạo dự án{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-{% if form.instance.pk %}warning{% else %}success{% endif %} text-white">
+            <h4>{% if form.instance.pk %}Sửa dự án{% else %}Tạo dự án mới{% endif %}</h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-success">Lưu</button>
+                <a href="{% if form.instance.pk %}{% url 'projects:detail' form.instance.pk %}{% else %}{% url 'projects:list' %}{% endif %}" class="btn btn-secondary">Hủy</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

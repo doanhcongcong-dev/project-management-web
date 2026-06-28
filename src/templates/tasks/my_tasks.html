@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Công việc của tôi{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+        <h2><i class="fas fa-tasks"></i> Công việc của tôi</h2>
+        <a href="{% url 'tasks:create' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Tạo công việc mới
+        </a>
+    </div>
+
+    <!-- Filter và tìm kiếm -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="status" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="new" {% if status_filter == 'new' %}selected{% endif %}>Mới</option>
+                        <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>Đang thực hiện</option>
+                        <option value="review" {% if status_filter == 'review' %}selected{% endif %}>Chờ duyệt</option>
+                        <option value="done" {% if status_filter == 'done' %}selected{% endif %}>Hoàn thành</option>
+                        <option value="overdue" {% if status_filter == 'overdue' %}selected{% endif %}>Quá hạn</option>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">Tìm kiếm</label>
+                    <input type="text" name="search" class="form-control" placeholder="Tiêu đề, mô tả..." value="{{ search_query }}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter"></i> Lọc</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Danh sách công việc -->
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tiêu đề</th>
+                            <th>Dự án</th>
+                            <th>Hạn</th>
+                            <th>Ưu tiên</th>
+                            <th>Trạng thái</th>
+                            <th>Tiến độ</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in page_obj %}
+                            <tr>
+                                <td><a href="{% url 'tasks:detail' task.id %}">{{ task.title }}</a></td>
+                                <td>{{ task.project.name }}</td>
+                                <td>{{ task.due_date|date:"d/m/Y" }}</td>
+                                <td>
+                                    <span class="badge {% if task.priority == 'critical' %}bg-danger{% elif task.priority == 'high' %}bg-warning{% elif task.priority == 'medium' %}bg-info{% else %}bg-secondary{% endif %}">
+                                        {{ task.get_priority_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if task.status == 'done' %}bg-success{% elif task.status == 'overdue' %}bg-danger{% elif task.status == 'in_progress' %}bg-primary{% elif task.status == 'review' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                        {{ task.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ task.progress }}%;">
+                                            {{ task.progress }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{% url 'tasks:detail' task.id %}" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a>
+                                    <a href="{% url 'tasks:update_progress' task.id %}" class="btn btn-sm btn-warning"><i class="fas fa-chart-line"></i></a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="7" class="text-center">Không có công việc nào được giao cho bạn.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if page_obj.has_other_pages %}
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">&laquo;</a></li>
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Trước</a></li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span></li>
+                        {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Sau</a></li>
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">&raquo;</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

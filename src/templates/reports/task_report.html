@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Báo cáo công việc{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mt-3"><i class="fas fa-list"></i> Báo cáo công việc</h2>
+
+    <!-- Filter & Search -->
+    <div class="card mt-3">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Dự án</label>
+                    <select name="project" class="form-select">
+                        <option value="">Tất cả</option>
+                        {% for p in projects %}
+                            <option value="{{ p.id }}" {% if project_id == p.id|stringformat:"s" %}selected{% endif %}>{{ p.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="status" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="new" {% if status == 'new' %}selected{% endif %}>Mới</option>
+                        <option value="in_progress" {% if status == 'in_progress' %}selected{% endif %}>Đang làm</option>
+                        <option value="done" {% if status == 'done' %}selected{% endif %}>Hoàn thành</option>
+                        <option value="overdue" {% if status == 'overdue' %}selected{% endif %}>Quá hạn</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Tìm kiếm</label>
+                    <input type="text" name="search" class="form-control" value="{{ search }}" placeholder="Tiêu đề...">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Lọc</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Thống kê nhanh -->
+    <div class="row mt-3">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h5>Tổng số</h5>
+                    <h2>{{ total }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h5>Theo trạng thái</h5>
+                    <ul class="list-unstyled">
+                        {% for item in by_status %}
+                            <li>{{ item.status|capfirst }}: {{ item.count }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h5>Theo ưu tiên</h5>
+                    <ul class="list-unstyled">
+                        {% for item in by_priority %}
+                            <li>{{ item.priority|capfirst }}: {{ item.count }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng tasks -->
+    <div class="table-responsive mt-3">
+        <table class="table table-hover table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Tiêu đề</th>
+                    <th>Dự án</th>
+                    <th>Người tạo</th>
+                    <th>Trạng thái</th>
+                    <th>Ưu tiên</th>
+                    <th>Hạn</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                    <tr>
+                        <td><a href="{% url 'tasks:detail' task.id %}">{{ task.title }}</a></td>
+                        <td>{{ task.project.name }}</td>
+                        <td>{{ task.created_by.username|default:"-" }}</td>
+                        <td>{{ task.get_status_display }}</td>
+                        <td>{{ task.get_priority_display }}</td>
+                        <td>{{ task.due_date|date:"d/m/Y" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="text-center">Không có công việc nào.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+<ul class="nav flex-column">
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'dashboard:index' %}">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'projects:list' %}">
+            <i class="fas fa-folder-open"></i> Dự án
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'tasks:list' %}">
+            <i class="fas fa-tasks"></i> Công việc
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'employees:list' %}">
+            <i class="fas fa-users"></i> Nhân viên
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'milestones:list' %}">
+            <i class="fas fa-flag-checkered"></i> Cột mốc
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'test_products:list' %}">
+            <i class="fas fa-flask"></i> Sản phẩm thử nghiệm
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'notifications:list' %}">
+            <i class="fas fa-bell"></i> Thông báo
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'documents:list' %}">
+            <i class="fas fa-file-alt"></i> Tài liệu
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'chat:rooms' %}">
+            <i class="fas fa-comments"></i> Chat
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'wazuh_integration:alerts' %}">
+            <i class="fas fa-shield-alt"></i> Wazuh
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'reports:dashboard' %}">
+            <i class="fas fa-chart-bar"></i> Báo cáo
+        </a>
+    </li>
+</ul>

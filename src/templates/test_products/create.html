@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Thêm sản phẩm thử nghiệm{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h4><i class="fas fa-plus"></i> Thêm sản phẩm thử nghiệm</h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Lưu</button>
+                    <a href="{% url 'test_products:list' %}" class="btn btn-secondary">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

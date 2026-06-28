@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Báo cáo dự án{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mt-3"><i class="fas fa-chart-bar"></i> Báo cáo dự án</h2>
+
+    <div class="card mt-3">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Chọn dự án</label>
+                    <select name="project_id" class="form-select">
+                        <option value="">Tất cả</option>
+                        {% for project in projects %}
+                            <option value="{{ project.id }}" {% if project_id == project.id|stringformat:"s" %}selected{% endif %}>
+                                {{ project.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Lọc</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="table-responsive mt-3">
+        <table class="table table-hover table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Tên dự án</th>
+                    <th>Trạng thái</th>
+                    <th>Tổng task</th>
+                    <th>Hoàn thành</th>
+                    <th>Quá hạn</th>
+                    <th>Tổng rủi ro</th>
+                    <th>Rủi ro mở</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                    <tr>
+                        <td><a href="{% url 'projects:detail' project.id %}">{{ project.name }}</a></td>
+                        <td>{{ project.get_status_display }}</td>
+                        <td>{{ project.task_count }}</td>
+                        <td>{{ project.completed_task_count }}</td>
+                        <td class="text-danger">{{ project.overdue_task_count }}</td>
+                        <td>{{ project.risk_count }}</td>
+                        <td class="text-warning">{{ project.open_risk_count }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="7" class="text-center">Không có dự án nào.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

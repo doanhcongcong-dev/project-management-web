@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Xác thực 2FA{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-warning">
+                    <h4><i class="fas fa-key"></i> Xác thực 2 yếu tố</h4>
+                </div>
+                <div class="card-body">
+                    <p>Vui lòng nhập mã OTP từ ứng dụng xác thực của bạn:</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button type="submit" class="btn btn-primary">Xác thực</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

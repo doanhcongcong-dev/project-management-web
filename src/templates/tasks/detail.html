@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Chi tiết công việc{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between">
+            <h4>{{ task.title }}</h4>
+            <div>
+                <a href="{% url 'tasks:edit' task.id %}" class="btn btn-warning btn-sm">Sửa</a>
+                <a href="{% url 'tasks:delete' task.id %}" class="btn btn-danger btn-sm">Xóa</a>
+                <a href="{% url 'tasks:update_progress' task.id %}" class="btn btn-info btn-sm">Cập nhật tiến độ</a>
+                <a href="{% url 'tasks:list' %}" class="btn btn-secondary btn-sm">Quay lại</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5>Mô tả</h5>
+                    <p>{{ task.description|linebreaks|default:"Không có mô tả" }}</p>
+                </div>
+                <div class="col-md-4">
+                    <table class="table table-bordered">
+                        <tr><th>Dự án</th><td>{{ task.project.name }}</td></tr>
+                        <tr><th>Người tạo</th><td>{{ task.created_by.username }}</td></tr>
+                        <tr><th>Người được giao</th>
+                            <td>
+                                {% for user in task.assigned_to.all %}
+                                    <span class="badge bg-secondary">{{ user.username }}</span>
+                                {% empty %}
+                                    <span class="text-muted">Chưa có</span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        <tr><th>Hạn</th><td>{{ task.due_date|date:"d/m/Y" }}</td></tr>
+                        <tr><th>Ưu tiên</th>
+                            <td>
+                                <span class="badge bg-{% if task.priority == 'critical' %}danger{% elif task.priority == 'high' %}warning{% else %}info{% endif %}">
+                                    {{ task.get_priority_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr><th>Trạng thái</th>
+                            <td>
+                                <span class="badge bg-{% if task.status == 'done' %}success{% elif task.status == 'overdue' %}danger{% elif task.status == 'in_progress' %}primary{% else %}secondary{% endif %}">
+                                    {{ task.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr><th>Tiến độ</th>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" style="width: {{ task.progress }}%;">{{ task.progress }}%</div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr><th>Ngày tạo</th><td>{{ task.created_at|date:"d/m/Y H:i" }}</td></tr>
+                        <tr><th>Cập nhật</th><td>{{ task.updated_at|date:"d/m/Y H:i" }}</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

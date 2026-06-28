@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Danh sách sản phẩm thử nghiệm{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+        <h2><i class="fas fa-flask"></i> Sản phẩm thử nghiệm</h2>
+        <a href="{% url 'test_products:create' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Thêm mới
+        </a>
+    </div>
+
+    <!-- Bộ lọc và tìm kiếm -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Dự án</label>
+                    <select name="project" class="form-select">
+                        <option value="">Tất cả</option>
+                        {% for project in projects %}
+                            <option value="{{ project.id }}" {% if selected_project == project.id|stringformat:"s" %}selected{% endif %}>
+                                {{ project.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Kết quả</label>
+                    <select name="result" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="pass" {% if selected_result == 'pass' %}selected{% endif %}>Pass</option>
+                        <option value="fail" {% if selected_result == 'fail' %}selected{% endif %}>Fail</option>
+                        <option value="pending" {% if selected_result == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="blocked" {% if selected_result == 'blocked' %}selected{% endif %}>Blocked</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Tìm kiếm</label>
+                    <input type="text" name="search" class="form-control" placeholder="Tên, phiên bản..." value="{{ search_query }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter"></i> Lọc</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bảng danh sách -->
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tên sản phẩm</th>
+                            <th>Phiên bản</th>
+                            <th>Dự án</th>
+                            <th>Kết quả</th>
+                            <th>Người test</th>
+                            <th>Ngày test</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in page_obj %}
+                            <tr>
+                                <td><a href="{% url 'test_products:detail' product.id %}" class="text-decoration-none">{{ product.name }}</a></td>
+                                <td>{{ product.version }}</td>
+                                <td>{{ product.project.name }}</td>
+                                <td>
+                                    <span class="badge {% if product.result == 'pass' %}bg-success{% elif product.result == 'fail' %}bg-danger{% elif product.result == 'pending' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                        {{ product.get_result_display }}
+                                    </span>
+                                </td>
+                                <td>{{ product.tester.username|default:"Chưa có" }}</td>
+                                <td>{{ product.test_date|date:"d/m/Y" }}</td>
+                                <td>
+                                    <a href="{% url 'test_products:detail' product.id %}" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a>
+                                    <a href="{% url 'test_products:edit' product.id %}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
+                                    <a href="{% url 'test_products:delete' product.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Bạn chắc chắn xóa?')"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="7" class="text-center">Chưa có sản phẩm thử nghiệm nào.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Phân trang -->
+            {% if page_obj.has_other_pages %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page=1{% if selected_project %}&project={{ selected_project }}{% endif %}{% if selected_result %}&result={{ selected_result }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">&laquo; Đầu</a></li>
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_project %}&project={{ selected_project }}{% endif %}{% if selected_result %}&result={{ selected_result }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Trước</a></li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span></li>
+                        {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_project %}&project={{ selected_project }}{% endif %}{% if selected_result %}&result={{ selected_result }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Sau</a></li>
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if selected_project %}&project={{ selected_project }}{% endif %}{% if selected_result %}&result={{ selected_result }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Cuối &raquo;</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

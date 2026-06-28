@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chi tiết sản phẩm thử nghiệm{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4><i class="fas fa-flask"></i> {{ product.name }} - v{{ product.version }}</h4>
+            <div>
+                <a href="{% url 'test_products:edit' product.id %}" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> Sửa</a>
+                <a href="{% url 'test_products:delete' product.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Bạn chắc chắn xóa?')"><i class="fas fa-trash"></i> Xóa</a>
+                <a href="{% url 'test_products:list' %}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Quay lại</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-bordered">
+                        <tr><th>Dự án</th><td>{{ product.project.name }}</td></tr>
+                        <tr><th>Phiên bản</th><td>{{ product.version }}</td></tr>
+                        <tr><th>Môi trường</th><td>{{ product.environment }}</td></tr>
+                        <tr><th>Kết quả</th>
+                            <td>
+                                <span class="badge {% if product.result == 'pass' %}bg-success{% elif product.result == 'fail' %}bg-danger{% elif product.result == 'pending' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                    {{ product.get_result_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr><th>Người test</th><td>{{ product.tester.username|default:"Chưa có" }}</td></tr>
+                        <tr><th>Ngày test</th><td>{{ product.test_date|date:"d/m/Y" }}</td></tr>
+                        <tr><th>Ngày tạo</th><td>{{ product.created_at|date:"d/m/Y H:i" }}</td></tr>
+                        <tr><th>Cập nhật</th><td>{{ product.updated_at|date:"d/m/Y H:i" }}</td></tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h5>Ghi chú:</h5>
+                    <div class="p-3 bg-light rounded">
+                        {{ product.notes|default:"Không có ghi chú."|linebreaks }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

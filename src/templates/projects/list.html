@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Danh sách dự án{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+        <h2><i class="fas fa-folder-open"></i> Dự án</h2>
+        <a href="{% url 'projects:create' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Tạo dự án
+        </a>
+    </div>
+
+    <!-- Tìm kiếm và lọc -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="status" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="planning" {% if status_filter == 'planning' %}selected{% endif %}>Lên kế hoạch</option>
+                        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Đang tiến hành</option>
+                        <option value="on_hold" {% if status_filter == 'on_hold' %}selected{% endif %}>Tạm dừng</option>
+                        <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Hoàn thành</option>
+                        <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Hủy bỏ</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Tìm kiếm</label>
+                    <input type="text" name="search" class="form-control" placeholder="Tên, mô tả..." value="{{ search_query }}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter"></i> Lọc</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Danh sách dự án -->
+    <div class="row">
+        {% for project in page_obj %}
+            <div class="col-md-4 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">{{ project.name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">{{ project.description|truncatechars:100 }}</p>
+                        <p><strong>Trạng thái:</strong> 
+                            <span class="badge bg-{% if project.status == 'active' %}success{% elif project.status == 'completed' %}primary{% elif project.status == 'on_hold' %}warning{% elif project.status == 'cancelled' %}danger{% else %}secondary{% endif %}">
+                                {{ project.get_status_display }}
+                            </span>
+                        </p>
+                        <p><strong>Quản lý:</strong> {{ project.manager.username|default:"Chưa có" }}</p>
+                        <p><strong>Thành viên:</strong> {{ project.members.count }}</p>
+                        <p><strong>Tiến độ:</strong></p>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" style="width: {{ project.get_progress }}%;">{{ project.get_progress }}%</div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="{% url 'projects:detail' project.id %}" class="btn btn-info btn-sm">Xem</a>
+                        <a href="{% url 'projects:edit' project.id %}" class="btn btn-warning btn-sm">Sửa</a>
+                        <a href="{% url 'projects:delete' project.id %}" class="btn btn-danger btn-sm">Xóa</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center">Không có dự án nào.</div>
+        {% endfor %}
+    </div>
+
+    <!-- Phân trang -->
+    {% if page_obj.has_other_pages %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">&laquo;</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Trước</a></li>
+                {% endif %}
+                <li class="page-item active"><span class="page-link">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span></li>
+                {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Sau</a></li>
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">&raquo;</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+</div>
+{% endblock %}

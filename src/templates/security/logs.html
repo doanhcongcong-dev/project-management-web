@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Log bảo mật{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+        <h2><i class="fas fa-shield-alt"></i> Log bảo mật</h2>
+    </div>
+
+    <!-- Filter -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Người dùng</label>
+                    <select name="user" class="form-select">
+                        <option value="">Tất cả</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}" {% if selected_user == user.id|stringformat:"s" %}selected{% endif %}>
+                                {{ user.username }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Hành động</label>
+                    <select name="action" class="form-select">
+                        <option value="">Tất cả</option>
+                        {% for key, value in actions %}
+                            <option value="{{ key }}" {% if selected_action == key %}selected{% endif %}>
+                                {{ value }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter"></i> Lọc</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bảng log -->
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Người dùng</th>
+                            <th>Hành động</th>
+                            <th>Mô tả</th>
+                            <th>IP</th>
+                            <th>Thời gian</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in page_obj %}
+                            <tr>
+                                <td>{{ log.user.username|default:"Hệ thống" }}</td>
+                                <td><span class="badge bg-secondary">{{ log.get_action_display }}</span></td>
+                                <td>{{ log.description|truncatechars:50 }}</td>
+                                <td>{{ log.ip_address|default:"-" }}</td>
+                                <td>{{ log.timestamp|date:"d/m/Y H:i:s" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="5" class="text-center">Không có log nào.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Phân trang -->
+            {% if page_obj.has_other_pages %}
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page=1{% if selected_user %}&user={{ selected_user }}{% endif %}{% if selected_action %}&action={{ selected_action }}{% endif %}">&laquo;</a></li>
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_user %}&user={{ selected_user }}{% endif %}{% if selected_action %}&action={{ selected_action }}{% endif %}">Trước</a></li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span></li>
+                        {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_user %}&user={{ selected_user }}{% endif %}{% if selected_action %}&action={{ selected_action }}{% endif %}">Sau</a></li>
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if selected_user %}&user={{ selected_user }}{% endif %}{% if selected_action %}&action={{ selected_action }}{% endif %}">&raquo;</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

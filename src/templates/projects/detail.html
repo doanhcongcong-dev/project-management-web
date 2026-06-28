@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}Chi tiết dự án{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between">
+            <h4>{{ project.name }}</h4>
+            <div>
+                <a href="{% url 'projects:edit' project.id %}" class="btn btn-warning btn-sm">Sửa</a>
+                <a href="{% url 'projects:delete' project.id %}" class="btn btn-danger btn-sm">Xóa</a>
+                <a href="{% url 'projects:list' %}" class="btn btn-secondary btn-sm">Quay lại</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5>Mô tả</h5>
+                    <p>{{ project.description|linebreaks|default:"Không có mô tả" }}</p>
+                </div>
+                <div class="col-md-4">
+                    <table class="table table-bordered">
+                        <tr><th>Trạng thái</th><td><span class="badge bg-{% if project.status == 'active' %}success{% elif project.status == 'completed' %}primary{% elif project.status == 'on_hold' %}warning{% elif project.status == 'cancelled' %}danger{% else %}secondary{% endif %}">{{ project.get_status_display }}</span></td></tr>
+                        <tr><th>Ngày bắt đầu</th><td>{{ project.start_date|date:"d/m/Y" }}</td></tr>
+                        <tr><th>Ngày kết thúc</th><td>{{ project.end_date|date:"d/m/Y"|default:"Chưa có" }}</td></tr>
+                        <tr><th>Quản lý</th><td>{{ project.manager.username|default:"Chưa có" }}</td></tr>
+                        <tr><th>Thành viên</th>
+                            <td>
+                                {% for member in project.members.all %}
+                                    <span class="badge bg-secondary">{{ member.username }}</span>
+                                {% empty %}
+                                    <span class="text-muted">Chưa có</span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        <tr><th>Tiến độ</th>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" style="width: {{ progress }}%;">{{ progress }}%</div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Danh sách task -->
+            <h5 class="mt-4">Công việc trong dự án</h5>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead>
+                        <tr><th>Tiêu đề</th><th>Hạn</th><th>Trạng thái</th><th>Tiến độ</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks %}
+                            <tr>
+                                <td><a href="{% url 'tasks:detail' task.id %}">{{ task.title }}</a></td>
+                                <td>{{ task.due_date|date:"d/m/Y" }}</td>
+                                <td><span class="badge bg-{% if task.status == 'done' %}success{% else %}warning{% endif %}">{{ task.get_status_display }}</span></td>
+                                <td>{{ task.progress }}%</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="4" class="text-center">Chưa có công việc nào.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <a href="{% url 'tasks:create' %}?project={{ project.id }}" class="btn btn-sm btn-success">Thêm công việc</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

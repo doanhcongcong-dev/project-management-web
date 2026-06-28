@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Chi tiết cột mốc{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between">
+            <h4>{{ milestone.name }}</h4>
+            <div>
+                <a href="{% url 'milestones:edit' milestone.id %}" class="btn btn-warning btn-sm">Sửa</a>
+                <a href="{% url 'milestones:delete' milestone.id %}" class="btn btn-danger btn-sm">Xóa</a>
+                <a href="{% url 'milestones:update_progress' milestone.id %}" class="btn btn-info btn-sm">Cập nhật tiến độ</a>
+                <a href="{% url 'milestones:list' %}" class="btn btn-secondary btn-sm">Quay lại</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5>Mô tả</h5>
+                    <p>{{ milestone.description|linebreaks|default:"Không có mô tả" }}</p>
+                    <h5>Tiến độ</h5>
+                    <div class="progress" style="height: 30px;">
+                        <div class="progress-bar bg-success" style="width: {{ progress }}%;">{{ progress }}%</div>
+                    </div>
+                    <br>
+                    <h5>Công việc liên quan</h5>
+                    <ul class="list-group">
+                        {% for task in tasks %}
+                            <li class="list-group-item">
+                                <a href="{% url 'tasks:detail' task.id %}">{{ task.title }}</a>
+                                <span class="badge bg-{% if task.status == 'done' %}success{% elif task.status == 'overdue' %}danger{% else %}secondary{% endif %} float-end">
+                                    {{ task.get_status_display }}
+                                </span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item">Chưa có công việc nào được gắn với cột mốc này.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <table class="table table-bordered">
+                        <tr><th>Dự án</th><td>{{ milestone.project.name }}</td></tr>
+                        <tr><th>Ngày đích</th><td>{{ milestone.due_date|date:"d/m/Y" }}</td></tr>
+                        <tr><th>Trạng thái</th>
+                            <td>
+                                <span class="badge bg-{% if milestone.status == 'completed' %}success{% elif milestone.status == 'in_progress' %}primary{% elif milestone.status == 'delayed' %}danger{% else %}secondary{% endif %}">
+                                    {{ milestone.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr><th>Người tạo</th><td>{{ milestone.created_by.username|default:"-" }}</td></tr>
+                        <tr><th>Ngày tạo</th><td>{{ milestone.created_at|date:"d/m/Y H:i" }}</td></tr>
+                        <tr><th>Cập nhật</th><td>{{ milestone.updated_at|date:"d/m/Y H:i" }}</td></tr>
+                        {% if milestone.completed_at %}
+                            <tr><th>Hoàn thành lúc</th><td>{{ milestone.completed_at|date:"d/m/Y H:i" }}</td></tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chi tiết nhân viên{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between">
+            <h4>{{ profile.get_full_name }}</h4>
+            <div>
+                <a href="{% url 'employees:edit' profile.id %}" class="btn btn-warning btn-sm">Sửa</a>
+                <a href="{% url 'employees:delete' profile.id %}" class="btn btn-danger btn-sm">Xóa</a>
+                <a href="{% url 'employees:list' %}" class="btn btn-secondary btn-sm">Quay lại</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    {% if profile.avatar %}
+                        <img src="{{ profile.avatar.url }}" alt="Avatar" class="img-fluid rounded-circle" style="width:150px;height:150px;object-fit:cover;">
+                    {% else %}
+                        <img src="{% static 'images/default-avatar.png' %}" alt="Avatar" class="img-fluid rounded-circle" style="width:150px;height:150px;object-fit:cover;">
+                    {% endif %}
+                </div>
+                <div class="col-md-8">
+                    <table class="table table-bordered">
+                        <tr><th>Mã nhân viên</th><td>{{ profile.employee_id }}</td></tr>
+                        <tr><th>Họ tên</th><td>{{ profile.get_full_name }}</td></tr>
+                        <tr><th>Tên đăng nhập</th><td>{{ profile.user.username }}</td></tr>
+                        <tr><th>Email</th><td>{{ profile.user.email }}</td></tr>
+                        <tr><th>Phòng ban</th><td>{{ profile.department }}</td></tr>
+                        <tr><th>Chức vụ</th><td>{{ profile.position }}</td></tr>
+                        <tr><th>Số điện thoại</th><td>{{ profile.phone|default:"-" }}</td></tr>
+                        <tr><th>Địa chỉ</th><td>{{ profile.address|default:"-" }}</td></tr>
+                        <tr><th>Ngày vào làm</th><td>{{ profile.hire_date|date:"d/m/Y" }}</td></tr>
+                        <tr><th>Ngày sinh</th><td>{{ profile.birth_date|date:"d/m/Y"|default:"-" }}</td></tr>
+                        <tr><th>Kỹ năng</th><td>{{ profile.skills|linebreaks|default:"-" }}</td></tr>
+                        <tr><th>Trạng thái</th>
+                            <td>
+                                <span class="badge {% if profile.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                                    {{ profile.is_active|yesno:"Đang làm,Nghỉ việc" }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr><th>Ngày tạo</th><td>{{ profile.created_at|date:"d/m/Y H:i" }}</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

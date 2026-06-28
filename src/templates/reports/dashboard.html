@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
+<style>
+    .card-stats {
+        transition: 0.3s;
+        border-radius: 10px;
+        box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+    }
+    .card-stats:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+        transform: translateY(-3px);
+    }
+    .stat-icon {
+        font-size: 2.5rem;
+        opacity: 0.7;
+    }
+    .stat-number {
+        font-weight: bold;
+        font-size: 1.5rem;
+    }
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+    }
+    .stat-value {
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mt-3 mb-4"><i class="fas fa-chart-pie"></i> Dashboard tổng quan</h2>
+
+    <!-- Thống kê nhanh -->
+    <div class="row">
+        <div class="col-md-3 col-sm-6">
+            <div class="card card-stats text-center p-3 bg-primary text-white">
+                <i class="fas fa-project-diagram stat-icon"></i>
+                <div class="stat-number">{{ total_projects }}</div>
+                <div class="stat-label">Dự án</div>
+                <small>{{ active_projects }} đang hoạt động</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card card-stats text-center p-3 bg-success text-white">
+                <i class="fas fa-tasks stat-icon"></i>
+                <div class="stat-number">{{ total_tasks }}</div>
+                <div class="stat-label">Công việc</div>
+                <small>{{ completed_tasks }} đã hoàn thành</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card card-stats text-center p-3 bg-warning text-dark">
+                <i class="fas fa-exclamation-triangle stat-icon"></i>
+                <div class="stat-number">{{ total_risks }}</div>
+                <div class="stat-label">Rủi ro</div>
+                <small>{{ open_risks }} đang mở</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card card-stats text-center p-3 bg-info text-white">
+                <i class="fas fa-flask stat-icon"></i>
+                <div class="stat-number">{{ total_test_products }}</div>
+                <div class="stat-label">Sản phẩm test</div>
+                <small>{{ pass_tests }} Pass / {{ fail_tests }} Fail</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Biểu đồ Task theo người được giao -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-user"></i> Công việc theo người được giao
+                </div>
+                <div class="card-body">
+                    <canvas id="taskAssigneeChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Biểu đồ Task theo dự án -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-folder"></i> Công việc theo dự án
+                </div>
+                <div class="card-body">
+                    <canvas id="taskProjectChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Dự án gần đây -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-clock"></i> Dự án gần đây
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for project in recent_projects %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <a href="{% url 'projects:detail' project.id %}">{{ project.name }}</a>
+                                <span class="badge bg-{% if project.status == 'active' %}success{% elif project.status == 'completed' %}primary{% elif project.status == 'on_hold' %}warning{% else %}secondary{% endif %}">
+                                    {{ project.get_status_display }}
+                                </span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-center">Chưa có dự án nào.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- Task quá hạn -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header text-danger">
+                    <i class="fas fa-exclamation-circle"></i> Công việc quá hạn
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for task in recent_overdue_tasks %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <a href="{% url 'tasks:detail' task.id %}">{{ task.title }}</a>
+                                <span class="badge bg-danger">Quá hạn</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-center">Không có công việc quá hạn.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    // Biểu đồ task theo người được giao
+    const assigneeCtx = document.getElementById('taskAssigneeChart').getContext('2d');
+    const assigneeData = {{ task_by_assignee|safe }};
+    new Chart(assigneeCtx, {
+        type: 'bar',
+        data: {
+            labels: assigneeData.map(item => item.assigned_to__username || 'Chưa phân công'),
+            datasets: [{
+                label: 'Số lượng công việc',
+                data: assigneeData.map(item => item.count),
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+
+    // Biểu đồ task theo dự án
+    const projectCtx = document.getElementById('taskProjectChart').getContext('2d');
+    const projectData = {{ task_by_project|safe }};
+    new Chart(projectCtx, {
+        type: 'pie',
+        data: {
+            labels: projectData.map(item => item.name),
+            datasets: [{
+                data: projectData.map(item => item.task_count),
+                backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8', '#6f42c1', '#fd7e14', '#20c997', '#e83e8c', '#6610f2']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' }
+            }
+        }
+    });
+</script>
+{% endblock %}

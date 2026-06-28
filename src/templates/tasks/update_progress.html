@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Cập nhật tiến độ{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-info text-white">
+            <h4><i class="fas fa-chart-line"></i> Cập nhật tiến độ công việc</h4>
+        </div>
+        <div class="card-body">
+            <h5>{{ task.title }}</h5>
+            <p><strong>Dự án:</strong> {{ task.project.name }}</p>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-success">Cập nhật</button>
+                <a href="{% url 'tasks:detail' task.id %}" class="btn btn-secondary">Hủy</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

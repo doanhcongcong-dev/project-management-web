@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chi tiết cảnh báo{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h4><i class="fas fa-shield-alt"></i> Chi tiết cảnh báo</h4>
+            <div>
+                <a href="{% url 'wazuh_integration:alert_list' %}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Quay lại</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-bordered">
+                        <tr><th>Alert ID</th><td>{{ alert.alert_id|default:"N/A" }}</td></tr>
+                        <tr><th>Rule ID</th><td>{{ alert.rule_id }}</td></tr>
+                        <tr><th>Mô tả rule</th><td>{{ alert.rule_description }}</td></tr>
+                        <tr><th>Mức độ</th>
+                            <td>
+                                <span class="badge {% if alert.level >= 10 %}bg-danger{% elif alert.level >= 7 %}bg-warning{% elif alert.level >= 4 %}bg-info{% else %}bg-secondary{% endif %}">
+                                    {{ alert.level }}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr><th>IP nguồn</th><td>{{ alert.source_ip|default:"-" }}</td></tr>
+                        <tr><th>Agent</th><td>{{ alert.agent_name|default:"-" }} ({{ alert.agent_id|default:"N/A" }})</td></tr>
+                        <tr><th>Thời gian</th><td>{{ alert.timestamp|date:"d/m/Y H:i:s" }}</td></tr>
+                        <tr><th>Trạng thái</th>
+                            <td>
+                                {% if alert.is_acknowledged %}
+                                    <span class="badge bg-success">Đã xác nhận bởi {{ alert.acknowledged_by.username }} vào {{ alert.acknowledged_at|date:"d/m/Y H:i" }}</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Chưa xác nhận</span>
+                                    <a href="{% url 'wazuh_integration:acknowledge_alert' alert.id %}" class="btn btn-sm btn-success ms-2" onclick="return confirm('Xác nhận cảnh báo này?')"><i class="fas fa-check"></i> Xác nhận</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h5>Dữ liệu thô:</h5>
+                    <pre class="bg-light p-3 rounded" style="max-height:400px; overflow:auto;">{{ alert.raw_data|pprint }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

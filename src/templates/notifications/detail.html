@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Chi tiết thông báo{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4>{{ notification.title }}</h4>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">Từ: {{ notification.sender.username|default:"Hệ thống" }} | {{ notification.created_at|date:"d/m/Y H:i" }}</p>
+            <p>{{ notification.message|linebreaks }}</p>
+            {% if notification.link %}
+                <a href="{{ notification.link }}" class="btn btn-primary">Đi đến</a>
+            {% endif %}
+            <a href="{% url 'notifications:list' %}" class="btn btn-secondary">Quay lại</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

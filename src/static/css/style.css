@@ -1,0 +1,116 @@
+/* style.css - Tùy chỉnh giao diện dự án */
+
+/* Căn chỉnh sidebar */
+.sidebar {
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    padding-top: 20px;
+    border-right: 1px solid #dee2e6;
+}
+.sidebar .nav-link {
+    color: #333;
+    padding: 10px 20px;
+    border-radius: 0;
+    transition: all 0.3s;
+}
+.sidebar .nav-link:hover {
+    background-color: #e9ecef;
+    color: #007bff;
+}
+.sidebar .nav-link i {
+    margin-right: 10px;
+    width: 20px;
+    text-align: center;
+}
+
+/* Main content */
+.main-content {
+    padding: 20px;
+    background-color: #f1f3f5;
+    min-height: 100vh;
+}
+
+/* Card */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.08);
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: translateY(-2px);
+}
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    font-weight: 600;
+}
+
+/* Badge */
+.badge {
+    padding: 5px 10px;
+    font-weight: 500;
+}
+
+/* Progress bar */
+.progress {
+    height: 22px;
+    border-radius: 20px;
+    background-color: #e9ecef;
+}
+.progress-bar {
+    font-size: 13px;
+    line-height: 22px;
+    font-weight: 500;
+}
+
+/* Table */
+.table th {
+    background-color: #f8f9fa;
+    border-top: none;
+}
+.table-hover tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+/* Form */
+.form-control:focus, .form-select:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+label {
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+/* Avatar */
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #007bff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* Footer */
+.footer {
+    background-color: #fff;
+    border-top: 1px solid #dee2e6;
+    padding: 15px 0;
+    text-align: center;
+    margin-top: 30px;
+    color: #6c757d;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        min-height: auto;
+        border-right: none;
+        border-bottom: 1px solid #dee2e6;
+    }
+}

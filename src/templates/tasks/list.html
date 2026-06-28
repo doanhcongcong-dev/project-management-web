@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tất cả công việc{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+        <h2><i class="fas fa-tasks"></i> Tất cả công việc</h2>
+        <a href="{% url 'tasks:create' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Tạo công việc mới
+        </a>
+    </div>
+
+    <!-- Filter -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Dự án</label>
+                    <select name="project" class="form-select">
+                        <option value="">Tất cả</option>
+                        {% for project in projects %}
+                            <option value="{{ project.id }}" {% if selected_project == project.id|stringformat:"s" %}selected{% endif %}>
+                                {{ project.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="status" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="new" {% if selected_status == 'new' %}selected{% endif %}>Mới</option>
+                        <option value="in_progress" {% if selected_status == 'in_progress' %}selected{% endif %}>Đang thực hiện</option>
+                        <option value="review" {% if selected_status == 'review' %}selected{% endif %}>Chờ duyệt</option>
+                        <option value="done" {% if selected_status == 'done' %}selected{% endif %}>Hoàn thành</option>
+                        <option value="overdue" {% if selected_status == 'overdue' %}selected{% endif %}>Quá hạn</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Người được giao</label>
+                    <select name="assigned" class="form-select">
+                        <option value="">Tất cả</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}" {% if selected_assigned == user.id|stringformat:"s" %}selected{% endif %}>
+                                {{ user.username }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Tìm kiếm</label>
+                    <input type="text" name="search" class="form-control" placeholder="Tiêu đề..." value="{{ search_query }}">
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bảng -->
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Tiêu đề</th>
+                            <th>Dự án</th>
+                            <th>Người tạo</th>
+                            <th>Người được giao</th>
+                            <th>Hạn</th>
+                            <th>Ưu tiên</th>
+                            <th>Trạng thái</th>
+                            <th>Tiến độ</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in page_obj %}
+                            <tr>
+                                <td><a href="{% url 'tasks:detail' task.id %}">{{ task.title }}</a></td>
+                                <td>{{ task.project.name }}</td>
+                                <td>{{ task.created_by.username }}</td>
+                                <td>
+                                    {% for user in task.assigned_to.all %}
+                                        <span class="badge bg-secondary">{{ user.username }}</span>
+                                    {% endfor %}
+                                </td>
+                                <td>{{ task.due_date|date:"d/m/Y" }}</td>
+                                <td><span class="badge bg-{% if task.priority == 'critical' %}danger{% elif task.priority == 'high' %}warning{% else %}info{% endif %}">{{ task.get_priority_display }}</span></td>
+                                <td><span class="badge bg-{% if task.status == 'done' %}success{% elif task.status == 'overdue' %}danger{% elif task.status == 'in_progress' %}primary{% else %}secondary{% endif %}">{{ task.get_status_display }}</span></td>
+                                <td>{{ task.progress }}%</td>
+                                <td>
+                                    <a href="{% url 'tasks:detail' task.id %}" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a>
+                                    <a href="{% url 'tasks:edit' task.id %}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
+                                    <a href="{% url 'tasks:delete' task.id %}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="9" class="text-center">Không có công việc nào.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if page_obj.has_other_pages %}
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_project %}&project={{ selected_project }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_assigned %}&assigned={{ selected_assigned }}{% endif %}">&laquo;</a></li>
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_project %}&project={{ selected_project }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_assigned %}&assigned={{ selected_assigned }}{% endif %}">Trước</a></li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span></li>
+                        {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_project %}&project={{ selected_project }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_assigned %}&assigned={{ selected_assigned }}{% endif %}">Sau</a></li>
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_project %}&project={{ selected_project }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_assigned %}&assigned={{ selected_assigned }}{% endif %}">&raquo;</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

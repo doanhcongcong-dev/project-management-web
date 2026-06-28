@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chat{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mt-3"><i class="fas fa-comments"></i> Phòng chat</h2>
+    <hr>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5>Danh sách phòng chat</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for room in rooms %}
+                            <a href="{% url 'chat:room_detail' room.id %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ room.name }}</h5>
+                                    <span class="badge bg-secondary">{{ room.project.name }}</span>
+                                </div>
+                                <p class="mb-1">
+                                    Thành viên: {{ room.members.count }}
+                                    {% if room.unread_count > 0 %}
+                                        <span class="badge bg-danger">{{ room.unread_count }} tin nhắn mới</span>
+                                    {% endif %}
+                                </p>
+                                <small>
+                                    Cập nhật: {{ room.updated_at|date:"d/m/Y H:i" }}
+                                    {% with last_msg=room.get_last_message %}
+                                        {% if last_msg %}
+                                            - {{ last_msg.sender.username }}: {{ last_msg.content|truncatechars:30 }}
+                                        {% endif %}
+                                    {% endwith %}
+                                </small>
+                            </a>
+                        {% empty %}
+                            <div class="text-center py-4">Bạn chưa tham gia phòng chat nào.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5>Hướng dẫn</h5>
+                </div>
+                <div class="card-body">
+                    <p>Chọn một phòng chat để bắt đầu trò chuyện với các thành viên trong dự án.</p>
+                    <ul>
+                        <li>Tin nhắn được gửi real-time</li>
+                        <li>Đánh dấu đã đọc khi xem</li>
+                        <li>Lưu lịch sử tin nhắn</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

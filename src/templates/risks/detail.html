@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Chi tiết rủi ro{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between">
+            <h4>{{ risk.title }}</h4>
+            <div>
+                <a href="{% url 'risks:edit' risk.id %}" class="btn btn-warning btn-sm">Sửa</a>
+                <a href="{% url 'risks:delete' risk.id %}" class="btn btn-danger btn-sm">Xóa</a>
+                <a href="{% url 'risks:list' %}" class="btn btn-secondary btn-sm">Quay lại</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5>Mô tả</h5>
+                    <p>{{ risk.description|linebreaks }}</p>
+                    <h5>Kế hoạch giảm thiểu</h5>
+                    <p>{{ risk.mitigation_plan|linebreaks|default:"Chưa có" }}</p>
+                </div>
+                <div class="col-md-4">
+                    <table class="table table-bordered">
+                        <tr><th>Dự án</th><td>{{ risk.project.name }}</td></tr>
+                        <tr><th>Danh mục</th><td>{{ risk.category.name|default:"-" }}</td></tr>
+                        <tr><th>Xác suất</th><td>{{ risk.get_probability_display }}</td></tr>
+                        <tr><th>Tác động</th><td>{{ risk.get_impact_display }}</td></tr>
+                        <tr><th>Điểm rủi ro</th><td><strong>{{ risk.risk_score }}</strong></td></tr>
+                        <tr>
+                            <th>Mức độ</th>
+                            <td>
+                                {% with risk.get_risk_level as level %}
+                                    <span class="badge bg-{{ level.1 }}">{{ level.0 }}</span>
+                                {% endwith %}
+                            </td>
+                        </tr>
+                        <tr><th>Trạng thái</th>
+                            <td><span class="badge bg-{% if risk.status == 'open' %}danger{% elif risk.status == 'monitoring' %}warning{% elif risk.status == 'mitigated' %}info{% elif risk.status == 'closed' %}success{% else %}secondary{% endif %}">{{ risk.get_status_display }}</span></td>
+                        </tr>
+                        <tr><th>Người phụ trách</th><td>{{ risk.assigned_to.username|default:"-" }}</td></tr>
+                        <tr><th>Người tạo</th><td>{{ risk.created_by.username|default:"-" }}</td></tr>
+                        <tr><th>Ngày tạo</th><td>{{ risk.created_at|date:"d/m/Y H:i" }}</td></tr>
+                        <tr><th>Cập nhật</th><td>{{ risk.updated_at|date:"d/m/Y H:i" }}</td></tr>
+                        {% if risk.closed_at %}
+                            <tr><th>Ngày đóng</th><td>{{ risk.closed_at|date:"d/m/Y H:i" }}</td></tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

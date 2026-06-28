@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if profile %}Sửa nhân viên{% else %}Thêm nhân viên{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-{% if profile %}warning{% else %}success{% endif %} text-white">
+            <h4>{% if profile %}Sửa nhân viên{% else %}Thêm nhân viên mới{% endif %}</h4>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-success">Lưu</button>
+                <a href="{% if profile %}{% url 'employees:detail' profile.id %}{% else %}{% url 'employees:list' %}{% endif %}" class="btn btn-secondary">Hủy</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

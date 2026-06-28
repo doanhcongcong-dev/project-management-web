@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Xóa thông báo{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h4><i class="fas fa-trash"></i> Xác nhận xóa</h4>
+                </div>
+                <div class="card-body">
+                    <p>Bạn có chắc chắn muốn xóa thông báo <strong>"{{ notification.title }}"</strong> không?</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Xóa</button>
+                        <a href="{% url 'notifications:list' %}" class="btn btn-secondary">Hủy</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

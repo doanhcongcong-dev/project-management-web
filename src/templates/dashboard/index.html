@@ -1,0 +1,377 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tổng quan{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .stat-card {
+        transition: transform 0.2s;
+        border-radius: 10px;
+        border-left: 5px solid;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    .stat-card .stat-icon {
+        font-size: 2.5rem;
+        opacity: 0.5;
+    }
+    .stat-card .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+    }
+    .stat-card .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-4">
+        <h2><i class="fas fa-tachometer-alt"></i> Tổng quan</h2>
+        <div>
+            <span class="badge bg-danger me-2">{{ unread_count }} thông báo mới</span>
+            <span class="text-muted">Xin chào, {{ user.get_full_name|default:user.username }}</span>
+        </div>
+    </div>
+
+    <!-- Thống kê nhanh (6 cards) -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-2 col-6">
+            <div class="card stat-card border-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="stat-number">{{ total_projects }}</div>
+                            <div class="stat-label">Dự án</div>
+                        </div>
+                        <div class="stat-icon text-primary"><i class="fas fa-folder-open"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="card stat-card border-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="stat-number">{{ total_tasks }}</div>
+                            <div class="stat-label">Công việc</div>
+                        </div>
+                        <div class="stat-icon text-success"><i class="fas fa-tasks"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="card stat-card border-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="stat-number">{{ total_risks }}</div>
+                            <div class="stat-label">Rủi ro</div>
+                        </div>
+                        <div class="stat-icon text-warning"><i class="fas fa-exclamation-triangle"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="card stat-card border-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="stat-number">{{ total_documents }}</div>
+                            <div class="stat-label">Tài liệu</div>
+                        </div>
+                        <div class="stat-icon text-info"><i class="fas fa-file-alt"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="card stat-card border-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="stat-number">{{ my_tasks_overdue }}</div>
+                            <div class="stat-label">Quá hạn</div>
+                        </div>
+                        <div class="stat-icon text-danger"><i class="fas fa-clock"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-6">
+            <div class="card stat-card border-secondary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="stat-number">{{ unread_count }}</div>
+                            <div class="stat-label">Thông báo mới</div>
+                        </div>
+                        <div class="stat-icon text-secondary"><i class="fas fa-bell"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phần dành cho Admin/Quản lý -->
+    {% if is_admin_or_manager %}
+    <div class="row g-3 mb-4">
+        <!-- Biểu đồ dự án -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-pie"></i> Trạng thái dự án</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="projectChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Biểu đồ công việc -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-bar"></i> Trạng thái công việc</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="taskChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biểu đồ rủi ro -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-doughnut"></i> Phân loại rủi ro</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="riskChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h5><i class="fas fa-exclamation-circle"></i> Công việc quá hạn</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for task in overdue_tasks %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ task.title }}</strong>
+                                    <br><small class="text-muted">{{ task.project.name }}</small>
+                                </div>
+                                <span class="badge bg-danger">Quá hạn</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item">Không có công việc quá hạn.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dự án sắp kết thúc -->
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-warning">
+                    <h5><i class="fas fa-hourglass-half"></i> Dự án sắp kết thúc</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for p in upcoming_deadline %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ p.name }}</strong>
+                                    <br><small class="text-muted">Quản lý: {{ p.manager.username|default:"Chưa có" }}</small>
+                                </div>
+                                <span class="badge bg-warning">Hết hạn: {{ p.end_date|date:"d/m/Y" }}</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item">Không có dự án sắp kết thúc.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Phần dành cho Nhân viên -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5><i class="fas fa-tasks"></i> Công việc của tôi</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <h3>{{ my_tasks_count }}</h3>
+                            <small>Tổng</small>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="text-success">{{ my_tasks_done }}</h3>
+                            <small>Hoàn thành</small>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="text-danger">{{ my_tasks_overdue }}</h3>
+                            <small>Quá hạn</small>
+                        </div>
+                    </div>
+                    <hr>
+                    <h6>Công việc sắp đến hạn (3 ngày tới)</h6>
+                    <ul class="list-group">
+                        {% for task in my_upcoming_tasks %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ task.title }}
+                                <span class="badge bg-warning">{{ task.due_date|date:"d/m/Y" }}</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item">Không có công việc sắp đến hạn.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="fas fa-bell"></i> Thông báo mới</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for notif in latest_notifications %}
+                            <li class="list-group-item">
+                                <strong>{{ notif.title }}</strong><br>
+                                <small>{{ notif.message|truncatechars:80 }}</small>
+                                <br><small class="text-muted">{{ notif.created_at|timesince }}</small>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item">Không có thông báo mới.</li>
+                        {% endfor %}
+                    </ul>
+                    <a href="{% url 'notifications:list' %}" class="btn btn-sm btn-outline-primary mt-2">Xem tất cả</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dự án của tôi -->
+    <div class="row g-3">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5><i class="fas fa-project-diagram"></i> Dự án của tôi</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for p in my_projects %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ p.name }}
+                                <span class="badge bg-{% if p.status == 'active' %}success{% elif p.status == 'completed' %}primary{% else %}secondary{% endif %}">
+                                    {{ p.get_status_display }}
+                                </span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item">Bạn chưa tham gia dự án nào.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Chỉ vẽ biểu đồ nếu là admin/manager
+    {% if is_admin_or_manager %}
+        // Dữ liệu từ view
+        const projectStats = {{ project_stats|safe }};
+        const taskStats = {{ task_stats|safe }};
+        const riskStats = {{ risk_stats|safe }};
+
+        // Biểu đồ dự án (Doughnut)
+        new Chart(document.getElementById('projectChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Lên kế hoạch', 'Đang tiến hành', 'Tạm dừng', 'Hoàn thành'],
+                datasets: [{
+                    data: [projectStats.planning, projectStats.active, projectStats.on_hold, projectStats.completed],
+                    backgroundColor: ['#6c757d', '#0d6efd', '#ffc107', '#198754']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Biểu đồ công việc (Bar)
+        new Chart(document.getElementById('taskChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Mới', 'Đang thực hiện', 'Chờ duyệt', 'Hoàn thành', 'Quá hạn'],
+                datasets: [{
+                    label: 'Số lượng',
+                    data: [taskStats.new, taskStats.in_progress, taskStats.review, taskStats.done, taskStats.overdue],
+                    backgroundColor: ['#0d6efd', '#0dcaf0', '#ffc107', '#198754', '#dc3545']
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Biểu đồ rủi ro (Doughnut)
+        new Chart(document.getElementById('riskChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Cao', 'Trung bình', 'Thấp'],
+                datasets: [{
+                    data: [riskStats.high, riskStats.medium, riskStats.low],
+                    backgroundColor: ['#dc3545', '#ffc107', '#198754']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    {% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cảnh báo Wazuh{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mt-3 mb-3">
+        <h2><i class="fas fa-shield-alt"></i> Cảnh báo Wazuh</h2>
+        <div>
+            <a href="{% url 'wazuh_integration:sync_alerts' %}" class="btn btn-primary" onclick="return confirm('Bạn có chắc muốn đồng bộ alerts mới?')">
+                <i class="fas fa-sync"></i> Đồng bộ
+            </a>
+        </div>
+    </div>
+
+    <!-- Thống kê nhanh -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-danger shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Critical</h5>
+                    <p class="card-text display-6">{{ total_critical }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning shadow">
+                <div class="card-body">
+                    <h5 class="card-title">High</h5>
+                    <p class="card-text display-6">{{ total_high }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-info shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Medium</h5>
+                    <p class="card-text display-6">{{ total_medium }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-secondary shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Low</h5>
+                    <p class="card-text display-6">{{ total_low }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bộ lọc -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Mức độ</label>
+                    <select name="level" class="form-select">
+                        <option value="">Tất cả</option>
+                        {% for level in levels %}
+                            <option value="{{ level.0 }}" {% if selected_level == level.0|stringformat:"s" %}selected{% endif %}>{{ level.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="acknowledged" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="yes" {% if selected_acknowledged == 'yes' %}selected{% endif %}>Đã xác nhận</option>
+                        <option value="no" {% if selected_acknowledged == 'no' %}selected{% endif %}>Chưa xác nhận</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Tìm kiếm</label>
+                    <input type="text" name="search" class="form-control" placeholder="Mô tả, IP, Agent..." value="{{ search_query }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter"></i> Lọc</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bảng danh sách -->
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Alert ID</th>
+                            <th>Mức độ</th>
+                            <th>Mô tả</th>
+                            <th>IP nguồn</th>
+                            <th>Agent</th>
+                            <th>Thời gian</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for alert in page_obj %}
+                            <tr>
+                                <td>{{ alert.alert_id|default:"N/A" }}</td>
+                                <td>
+                                    <span class="badge {% if alert.level >= 10 %}bg-danger{% elif alert.level >= 7 %}bg-warning{% elif alert.level >= 4 %}bg-info{% else %}bg-secondary{% endif %}">
+                                        {{ alert.level }}
+                                    </span>
+                                </td>
+                                <td>{{ alert.rule_description|truncatechars:50 }}</td>
+                                <td>{{ alert.source_ip|default:"-" }}</td>
+                                <td>{{ alert.agent_name|default:"-" }}</td>
+                                <td>{{ alert.timestamp|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    {% if alert.is_acknowledged %}
+                                        <span class="badge bg-success">Đã xác nhận</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Chưa xác nhận</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'wazuh_integration:alert_detail' alert.id %}" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a>
+                                    {% if not alert.is_acknowledged %}
+                                        <a href="{% url 'wazuh_integration:acknowledge_alert' alert.id %}" class="btn btn-sm btn-success" onclick="return confirm('Xác nhận cảnh báo này?')"><i class="fas fa-check"></i></a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="8" class="text-center">Không có cảnh báo nào.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Phân trang -->
+            {% if page_obj.has_other_pages %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item"><a class="page-link" href="?page=1{% if selected_level %}&level={{ selected_level }}{% endif %}{% if selected_acknowledged %}&acknowledged={{ selected_acknowledged }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">« Đầu</a></li>
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_level %}&level={{ selected_level }}{% endif %}{% if selected_acknowledged %}&acknowledged={{ selected_acknowledged }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">‹ Trước</a></li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span></li>
+                        {% if page_obj.has_next %}
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_level %}&level={{ selected_level }}{% endif %}{% if selected_acknowledged %}&acknowledged={{ selected_acknowledged }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Sau ›</a></li>
+                            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if selected_level %}&level={{ selected_level }}{% endif %}{% if selected_acknowledged %}&acknowledged={{ selected_acknowledged }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">Cuối »</a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
